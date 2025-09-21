@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Quiz Từ Vựng Tiếng Đức — 80 từ</title>
+<style>
+body { font-family: Arial, sans-serif; margin: 20px; background: #f4f4f9; }
+#game { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+h1 { text-align: center; }
+.question { margin-bottom: 12px; }
+input { width: 100%; padding: 10px; font-size: 1em; margin-bottom: 6px; border: 1px solid #ccc; border-radius: 5px; }
+button { padding: 10px 15px; font-size: 1em; cursor: pointer; background: #4CAF50; color: white; border: none; border-radius: 5px; margin-top: 6px; }
+.result { font-weight: bold; margin-top: 4px; }
+.correct { color: green; }
+.wrong { color: red; }
+.timer { font-weight: bold; text-align: right; margin-bottom: 10px; }
+.summary { margin-top: 12px; background: #f0f0f5; padding: 10px; border-radius: 8px; font-family: monospace; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<div id="game">
+<h1>Quiz Từ Vựng Tiếng Đức</h1>
+<div class="timer">Thời gian còn lại: <span id="timer">25:00</span></div>
+<form id="quiz"></form>
+<button id="submit">Nộp bài</button>
+<div id="after" style="display:none">
+<h2>Kết quả</h2>
+<div id="score"></div>
+<div id="details"></div>
+</div>
+</div>
+<script>
+const vocab = [
+  {de: "die Sportart", vi: "Môn thể thao"},
+  {de: "sich bewegen", vi: "Vận động"},
+  {de: "das Kitesurfen", vi: "Lướt diều"},
+  {de: "surfen", vi: "Lướt sóng"},
+  {de: "tauchen", vi: "Lặn"},
+  {de: "langlaufen", vi: "Trượt tuyết băng đồng"},
+  {de: "Volleyball spielen", vi: "Chơi bóng chuyền"},
+  {de: "das Tor", vi: "Khung thành / bàn thắng"},
+  {de: "schießen", vi: "Sút bóng / bắn"},
+  {de: "werfen", vi: "Ném"},
+  {de: "mitspielen", vi: "Chơi cùng"},
+  {de: "das Rad", vi: "Xe đạp"},
+  {de: "die Radtour", vi: "Chuyến đi xe đạp"},
+  {de: "reiten", vi: "Cưỡi ngựa"},
+  {de: "Yoga machen", vi: "Tập yoga"},
+  {de: "der Kletterer", vi: "Người leo núi (nam)"},
+  {de: "die Kletterin", vi: "Người leo núi (nữ)"},
+  {de: "die Wanderung", vi: "Chuyến đi bộ đường dài"},
+  {de: "die Strecke", vi: "Quãng đường"},
+  {de: "die Kondition", vi: "Thể lực"},
+  {de: "die Gesundheit", vi: "Sức khỏe"},
+  {de: "entspannen", vi: "Thư giãn"},
+  {de: "der Wettbewerb", vi: "Cuộc thi / cạnh tranh"},
+  {de: "der Fußballschuh", vi: "Giày đá bóng"},
+  {de: "der Klettergurt", vi: "Đai leo núi"},
+  {de: "der Helm", vi: "Mũ bảo hiểm"},
+  {de: "die Matte", vi: "Thảm"},
+  {de: "das Mountainbike", vi: "Xe đạp leo núi"},
+  {de: "der Schläger", vi: "Vợt / gậy thể thao"},
+  {de: "der Skistock", vi: "Gậy trượt tuyết"},
+  {de: "das Paddel", vi: "Mái chèo"},
+  {de: "das Surfbrett", vi: "Ván lướt sóng"},
+  {de: "die Taucherbrille", vi: "Kính lặn"},
+  {de: "der Sportverein", vi: "Câu lạc bộ thể thao"},
+  {de: "die Mannschaft", vi: "Đội bóng"},
+  {de: "der Fußballstar", vi: "Ngôi sao bóng đá"},
+  {de: "der Fanartikel", vi: "Đồ lưu niệm cho fan"},
+  {de: "treu", vi: "Trung thành"},
+  {de: "benehmen", vi: "Cư xử"},
+  {de: "das Vorbild", vi: "Hình mẫu"},
+  {de: "sympathisch", vi: "Dễ mến"},
+  {de: "großartig", vi: "Tuyệt vời"},
+  {de: "genial", vi: "Thiên tài / tuyệt vời"},
+  {de: "unglaublich", vi: "Không thể tin nổi"},
+  {de: "der Wahnsinn", vi: "Điên rồ / tuyệt vời"},
+  {de: "Das war wahnsinnig gut!", vi: "Điều đó thật tuyệt vời!"},
+  {de: "die Hoffnung", vi: "Hi vọng"},
+  {de: "bestimmt", vi: "Chắc chắn"},
+  {de: "der Erfolg", vi: "Thành công"},
+  {de: "die Enttäuschung", vi: "Sự thất vọng"},
+  {de: "verlieren", vi: "Thua"},
+  {de: "die Katastrophe", vi: "Thảm họa"},
+  {de: "Was denkst du, sollen wir...?", vi: "Bạn nghĩ sao, chúng ta nên...?"},
+  {de: "Wir könnten ...", vi: "Chúng ta có thể ..."},
+  {de: "einverstanden sein", vi: "Đồng ý"},
+  {de: "passen", vi: "Phù hợp"},
+  {de: "die Anreise", vi: "Chuyến đi đến"},
+  {de: "der Einwohner", vi: "Người dân (nam)"},
+  {de: "die Einwohnerin", vi: "Người dân (nữ)"},
+  {de: "entfernt", vi: "Xa / cách xa"},
+  {de: "das kulturell", vi: "Văn hóa"},
+  {de: "faszinierend", vi: "Hấp dẫn"},
+  {de: "das Gasthaus", vi: "Quán trọ / nhà khách"},
+  {de: "hinunter", vi: "Xuống dưới"},
+  {de: "die Umgebung", vi: "Khu vực xung quanh"},
+  {de: "der Nationalpark", vi: "Công viên quốc gia"},
+  {de: "das Tal", vi: "Thung lũng"},
+  {de: "die Höhle", vi: "Hang động"},
+  {de: "der Führer", vi: "Hướng dẫn viên"},
+  {de: "die Temperatur", vi: "Nhiệt độ"},
+  {de: "der Nebel", vi: "Sương mù"},
+  {de: "stark", vi: "Mạnh / to"},
+  {de: "trocken", vi: "Khô"},
+  {de: "außer", vi: "Ngoại trừ"},
+  {de: "ausfallen", vi: "Bị hủy"},
+  {de: "basteln", vi: "Làm thủ công"},
+  {de: "die Kette", vi: "Sợi dây chuyền"},
+  {de: "das Material", vi: "Vật liệu"},
+  {de: "zurückgeben", vi: "Trả lại"},
+  {de: "bewachen", vi: "Canh gác"},
+  {de: "der Staat", vi: "Nhà nước / quốc gia"},
+  {de: "der Kanton", vi: "Bang (ở Thụy Sĩ)"},
+  {de: "der Cousin", vi: "Anh họ / em họ (nam)"},
+  {de: "die Sendung", vi: "Chương trình"},
+  {de: "der Hinweis", vi: "Gợi ý / chỉ dẫn"},
+  {de: "quer", vi: "Ngang"},
+  {de: "übermorgen", vi: "Ngày kia"},
+  {de: "neulich", vi: "Gần đây"}
+];
+const quizContainer = document.getElementById('quiz');
+vocab.forEach((w,i)=>{
+  const div = document.createElement('div');
+  div.className = 'question';
+  div.innerHTML = `<label>${i+1}. ${w.vi}</label><input type='text' data-i='${i}' placeholder='Nhập từ tiếng Đức'><div class='result' id='r-${i}'></div>`;
+  quizContainer.appendChild(div);
+});
+let timer = 25*60;
+let timerInterval = setInterval(()=>{
+  timer--;
+  const mm = String(Math.floor(timer/60)).padStart(2,'0');
+  const ss = String(timer%60).padStart(2,'0');
+  document.getElementById('timer').innerText = mm+':'+ss;
+  if(timer<=0){ clearInterval(timerInterval); autoSubmit(); }
+},1000);
+
+function autoSubmit(){
+  document.getElementById('submit').click();
+}
+
+document.getElementById('submit').addEventListener('click', (e)=>{
+  e.preventDefault();
+  clearInterval(timerInterval);
+  let correct = 0;
+  let details = "";
+  vocab.forEach((w,i)=>{
+    const ans = document.querySelector(`input[data-i='${i}']`).value.trim();
+    const resultDiv = document.getElementById(`r-${i}`);
+    if(ans.toLowerCase() === w.de.toLowerCase()){
+      resultDiv.innerHTML = `<span class='correct'>✔ ${w.de}</span>`;
+      correct++;
+    } else {
+      resultDiv.innerHTML = `<span class='wrong'>✘ Đúng: ${w.de}</span>`;
+    }
+    details += `${i+1}. ${w.vi} -> ${w.de} | Bạn: ${ans}\n`;
+  });
+  document.getElementById('score').innerText = `Bạn làm đúng ${correct}/${vocab.length}`;
+  document.getElementById('details').innerText = details;
+  document.getElementById('after').style.display = 'block';
+});
+</script>
+</body>
+</html>
